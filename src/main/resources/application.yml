@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: application.name=demo_data_jpa_2
+  #Postgres
+  datasource:
+    url: jdbc:postgresql://localhost:5432/book_jpa_homework_db
+    username: postgres
+    password: 2003
+  #JPA
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    properties:
+      hibernate:
+        format_sql: true
+server:
+  port: 9091
