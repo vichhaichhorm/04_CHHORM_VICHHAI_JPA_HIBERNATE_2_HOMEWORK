@@ -2,6 +2,7 @@ package com.vichhai.demo_data_jpa_2.repository;
 
 import com.vichhai.demo_data_jpa_2.dto.requestBook.DTOBookRequest;
 import com.vichhai.demo_data_jpa_2.entity.Book;
+import com.vichhai.demo_data_jpa_2.exception.bookException.BookException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @AllArgsConstructor
@@ -32,28 +34,55 @@ public class BookRepository {
         return entityManger.createQuery("SELECT book FROM Book_db book", Book.class).getResultList();
     }
 
-    public Book getBookById(String id) {
-        return entityManger.find(Book.class, id);
+    public Book getBookById(String id) throws BookException {
+        if (Objects.isNull(entityManger.find(Book.class, id))) {
+            throw BookException.bookNotFound();
+        } else {
+            return entityManger.find(Book.class, id);
+        }
     }
+//    public List<Book> getBookByTitle(String title) throws BookException {
+//        String queryStr = "SELECT book FROM Book_db book WHERE book.title LIKE :title";
+//        TypedQuery<Book> query = entityManger.createQuery(queryStr, Book.class);
+//        query.setParameter("title", "%" + title + "%");
+//        List<Book> resultList = query.getResultList();
+//        if (resultList.isEmpty()) {
+//            throw BookException.bookNotFound();
+//        }
+//        return resultList;
+//    }
 
-    public List<Book> getBookByTitle(String title) {
-        String queryStr = "SELECT book FROM Book_db book WHERE book.title LIKE :title";
+    public List<Book> getBookByTitle(String title) throws BookException {
+        String queryStr = "SELECT book FROM Book_db book WHERE LOWER(book.title) LIKE LOWER(:title)";
         TypedQuery<Book> query = entityManger.createQuery(queryStr, Book.class);
-        query.setParameter("title", "%" + title + "%");
-        return query.getResultList();
+        query.setParameter("title", "%" + title.toLowerCase() + "%");
+
+        List<Book> resultList = query.getResultList();
+        if (resultList.isEmpty()) {
+            throw BookException.bookNotFound();
+        }
+
+        return resultList;
     }
 
-    public Book deleteBookById(String id) {
+
+
+    public Book deleteBookById(String id) throws BookException {
         Book book = entityManger.find(Book.class, id);
+        if (Objects.isNull(entityManger.find(Book.class, id))) {
+            throw BookException.bookNotFound();
+        }
         if (book != null) {
             entityManger.remove(book);
         }
         return book;
     }
 
-    public Book updateBookById(String id, DTOBookRequest dtoBookRequest) {
+    public Book updateBookById(String id, DTOBookRequest dtoBookRequest) throws BookException {
         Book book = entityManger.find(Book.class, id);
-        if (book != null) {
+        if (Objects.isNull(book)) {
+            throw BookException.bookNotFound();
+        } else {
             entityManger.detach(book);
             book.setId(id);
             book.setTitle(dtoBookRequest.getTitle());

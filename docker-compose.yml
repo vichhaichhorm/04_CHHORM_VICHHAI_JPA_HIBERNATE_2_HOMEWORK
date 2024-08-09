@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    image: 'docker-spring-boot-image:latest'
+    build:
+      context: .
+    container_name: container_homework_2_docker_compose
+    depends_on:
+      - db_book
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=2003
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/book_jpa_homework_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=2003
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - "9098:8080"
+
+  db_book:
+    image: postgres:latest
+    container_name: db_book
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=2003
+      - POSTGRES_DB=book_jpa_homework_db
+    ports:
+      - "5438:5432"
+    volumes:
+      - volume_homework_2_docker_compose:/var/lib/postgresql/data
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  volume_homework_2_docker_compose:
